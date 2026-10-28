@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random Forest Predictor</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#64748b; --line:#e2e8f0; --accent:#3157d5; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; background:#f4f7fb; color:var(--ink); }
+    .wrap { max-width:1000px; margin:38px auto; padding:0 18px 40px; }
+    .hero { padding:28px; border-radius:22px; background:linear-gradient(135deg,#172554,#3157d5); color:white; box-shadow:0 12px 32px #17255422; }
+    .eyebrow { text-transform:uppercase; letter-spacing:.13em; font-size:12px; font-weight:700; opacity:.8; }
+    h1 { margin:8px 0; font-size:clamp(28px,4vw,38px); }
+    .hero p { margin:0; max-width:680px; line-height:1.6; color:#e2e8ff; }
+    .panel { background:white; margin-top:20px; padding:24px; border:1px solid var(--line); border-radius:18px; box-shadow:0 5px 18px #0f172a08; }
+    .panel h2 { margin:0 0 8px; font-size:20px; }
+    .hint { margin:0 0 18px; color:var(--muted); line-height:1.5; font-size:14px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+    label { display:block; font-size:13px; font-weight:650; margin-bottom:7px; overflow-wrap:anywhere; }
+    input { width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:11px 12px; font-size:15px; color:var(--ink); background:#fff; }
+    input:focus { outline:3px solid #3157d522; border-color:var(--accent); }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+    button { border:0; border-radius:11px; padding:12px 18px; font-size:15px; font-weight:700; cursor:pointer; }
+    .primary { background:var(--accent); color:white; }
+    .secondary { background:#eef2ff; color:#263c9a; }
+    .result { border:1px solid #bbf7d0; background:#f0fdf4; border-radius:14px; padding:18px; margin-top:20px; }
+    .result small { display:block; color:#166534; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+    .result strong { display:block; margin-top:5px; font-size:25px; color:#14532d; overflow-wrap:anywhere; }
+    .error { background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:12px; padding:14px; margin-top:18px; overflow-wrap:anywhere; }
+    .empty { padding:16px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:12px; line-height:1.5; }
+    footer { text-align:center; color:var(--muted); font-size:12px; margin-top:22px; }
+    @media(max-width:520px) { .hero,.panel { padding:19px; } .wrap { margin-top:18px; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <div class="eyebrow">Experiment 11 · Machine Learning</div>
+      <h1>Random Forest Predictor</h1>
+      <p>Enter the feature values required by your trained Random Forest model and get a predicted class.</p>
+    </header>
+
+    <section class="panel">
+      <h2>Input features</h2>
+      <p class="hint">
+        The form is generated from the saved model, so it shows the features that model expects.
+        Enter numeric values; for one-hot encoded features, use 0 or 1.
+      </p>
+
+      {% if not model_ready %}
+        <div class="empty">
+          <strong>Model not loaded.</strong><br>
+          {{ error or "Place RandomForestModel.joblib in the same folder as app.py, then restart the app." }}
+        </div>
+      {% elif feature_names %}
+        <form method="post">
+          <div class="grid">
+            {% for feature in feature_names %}
+              <div>
+                <label for="{{ feature }}">{{ feature }}</label>
+                <input id="{{ feature }}" name="{{ feature }}" type="number" step="any"
+                       required value="{{ submitted_values.get(feature, '') }}"
+                       placeholder="Enter {{ feature }}">
+              </div>
+            {% endfor %}
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Predict class</button>
+            <button class="secondary" type="reset">Clear inputs</button>
+          </div>
+        </form>
+      {% else %}
+        <div class="empty">The model loaded, but its feature names could not be read.</div>
+      {% endif %}
+
+      {% if prediction is not none %}
+        <div class="result" role="status">
+          <small>Prediction result</small>
+          <strong>{{ prediction }}</strong>
+        </div>
+      {% endif %}
+
+      {% if error and model_ready %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+    </section>
+    <footer>Prediction results depend on the dataset and model used for training.</footer>
+  </main>
+</body>
+</html>
